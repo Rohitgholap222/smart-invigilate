@@ -1,111 +1,512 @@
 {
-    "info": {
-        "_postman_id": "893d5678-1a2b-4c3d-9e0f-1a2b3c4d5e6f",
-        "name": "Smart Invigilate - Auth",
-        "description": "Postman collection for Smart Invigilate Authentication API.",
-        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-    },
-    "item": [
-        {
-            "name": "Authentication",
-            "item": [
-                {
-                    "name": "Register",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"password\": \"password123\"\n}"
-                        },
-                        "url": {
-                            "raw": "http://localhost:8082/api/v1/auth/register",
-                            "protocol": "http",
-                            "host": [
-                                "localhost"
-                            ],
-                            "port": "8082",
-                            "path": [
-                                "api",
-                                "v1",
-                                "auth",
-                                "register"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Login",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"email\": \"john.doe@example.com\",\n    \"password\": \"password123\"\n}"
-                        },
-                        "url": {
-                            "raw": "http://localhost:8082/api/v1/auth/login",
-                            "protocol": "http",
-                            "host": [
-                                "localhost"
-                            ],
-                            "port": "8082",
-                            "path": [
-                                "api",
-                                "v1",
-                                "auth",
-                                "login"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        }
-    ],
-    "event": [
-        {
-            "listen": "prerequest",
-            "script": {
-                "type": "text/javascript",
-                "exec": [
-                    ""
-                ]
-            }
-        },
-        {
-            "listen": "test",
-            "script": {
-                "type": "text/javascript",
-                "exec": [
-                    ""
-                ]
-            }
-        }
-    ],
-    "variable": [
-        {
-            "key": "baseUrl",
-            {
-                "key": "baseUrl",
-                "value": "http://localhost:8082/api/v1",
-                "type": "string"
-            },
-            {
-                "key": "jwt_token",
-                "value": "",
-                "type": "string"
-            }
-        ]
-    }
+	"info": {
+		"_postman_id": "893d5678-1a2b-4c3d-9e0f-1a2b3c4d5e6f",
+		"name": "Smart Invigilate",
+		"description": "Postman collection for Smart Invigilate API.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set(\"jwt_token\", jsonData.token);",
+									"console.log(\"Token stored:\", jsonData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@smartinvigilate.com\",\n    \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login (Student)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set(\"student_token\", jsonData.token);",
+									"console.log(\"Student Token stored:\", jsonData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"student1@example.com\",\n    \"password\": \"student123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin Flow",
+			"item": [
+				{
+					"name": "Add Student",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Student\",\n    \"lastName\": \"One\",\n    \"email\": \"student1@example.com\",\n    \"password\": \"student123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/add-student",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"add-student"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Exam",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Semester Final\",\n    \"description\": \"Main exam for the semester\",\n    \"startTime\": \"2024-03-10T10:00:00\",\n    \"endTime\": \"2024-03-10T12:00:00\",\n    \"durationInMinutes\": 120\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/exams",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"exams"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Questions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"content\": \"What is 2+2?\",\n        \"optionA\": \"3\",\n        \"optionB\": \"4\",\n        \"optionC\": \"5\",\n        \"optionD\": \"6\",\n        \"correctOption\": \"B\"\n    }\n]"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/exams/1/questions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"exams",
+								"1",
+								"questions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Activate Exam",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/exams/1/activate",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"exams",
+								"1",
+								"activate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Monitor Exam",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/exams/1/monitor",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"exams",
+								"1",
+								"monitor"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "View Results",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/exams/1/results",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"exams",
+								"1",
+								"results"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Student Flow",
+			"item": [
+				{
+					"name": "Get Active Exams",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{student_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/student/exams/active",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"student",
+								"exams",
+								"active"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Start Exam",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{student_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/student/exams/1/start",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"student",
+								"exams",
+								"1",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Proctoring Log",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{student_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"logType\": \"TAB_SWITCH\",\n    \"details\": \"User switched tab\",\n    \"timestamp\": \"2024-03-07T21:00:00\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/student/exams/1/logs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"student",
+								"exams",
+								"1",
+								"logs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Submit Exam",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{student_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"answers\": {\n        \"1\": \"B\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/student/exams/1/submit",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"student",
+								"exams",
+								"1",
+								"submit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "View Result",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{student_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/student/exams/1/result",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"student",
+								"exams",
+								"1",
+								"result"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8082/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "student_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
