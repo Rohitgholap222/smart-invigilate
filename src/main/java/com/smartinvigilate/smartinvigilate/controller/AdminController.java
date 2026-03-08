@@ -25,8 +25,24 @@ public class AdminController {
     public ResponseEntity<String> addStudent(
             @RequestBody RegisterRequest request
     ) {
-        authenticationService.addStudent(request);
-        return ResponseEntity.ok("Student added successfully");
+        try {
+            authenticationService.addStudent(request);
+            return ResponseEntity.ok("Student added successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/add-students")
+    public ResponseEntity<String> addStudents(
+            @RequestBody List<RegisterRequest> requests
+    ) {
+        try {
+            authenticationService.addStudents(requests);
+            return ResponseEntity.ok("Students added successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("/exams")

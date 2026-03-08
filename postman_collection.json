@@ -132,6 +132,43 @@
 					"response": []
 				},
 				{
+					"name": "Add Multiple Students",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"firstName\": \"Student\",\n        \"lastName\": \"Two\",\n        \"email\": \"student2@example.com\",\n        \"password\": \"student123\"\n    },\n    {\n        \"firstName\": \"Student\",\n        \"lastName\": \"Three\",\n        \"email\": \"student3@example.com\",\n        \"password\": \"student123\"\n    }\n]"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/add-students",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"add-students"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Create Exam",
 					"request": {
 						"auth": {

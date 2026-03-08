@@ -3,6 +3,7 @@ package com.smartinvigilate.smartinvigilate.service;
 import com.smartinvigilate.smartinvigilate.dto.AuthenticationRequest;
 import com.smartinvigilate.smartinvigilate.dto.AuthenticationResponse;
 import com.smartinvigilate.smartinvigilate.dto.RegisterRequest;
+import java.util.List;
 import com.smartinvigilate.smartinvigilate.model.Role;
 import com.smartinvigilate.smartinvigilate.model.User;
 import com.smartinvigilate.smartinvigilate.repository.UserRepository;
@@ -38,6 +39,9 @@ public class AuthenticationService {
     }
 
     public void addStudent(RegisterRequest request) {
+        if (repository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("User already exists with email: " + request.getEmail());
+        }
         var user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -46,5 +50,11 @@ public class AuthenticationService {
                 .role(Role.STUDENT)
                 .build();
         repository.save(user);
+    }
+
+    public void addStudents(List<RegisterRequest> requests) {
+        for (RegisterRequest request : requests) {
+            addStudent(request);
+        }
     }
 }

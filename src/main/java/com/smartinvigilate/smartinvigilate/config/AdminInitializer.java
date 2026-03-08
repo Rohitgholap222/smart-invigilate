@@ -8,6 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @Configuration
 @RequiredArgsConstructor
@@ -15,6 +16,18 @@ public class AdminInitializer {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Bean
+    public CommandLineRunner dropStaleConstraint(JdbcTemplate jdbcTemplate) {
+        return args -> {
+            try {
+                jdbcTemplate.execute("ALTER TABLE _user DROP CONSTRAINT IF EXISTS _user_role_check;");
+                System.out.println("Dropped stale check constraint _user_role_check if it existed.");
+            } catch (Exception e) {
+                System.out.println("Note: Could not drop constraint _user_role_check (it might not exist).");
+            }
+        };
+    }
 
     @Bean
     public CommandLineRunner initAdmin() {
