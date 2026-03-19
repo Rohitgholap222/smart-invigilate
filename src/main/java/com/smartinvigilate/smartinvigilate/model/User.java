@@ -24,6 +24,8 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    private String studentId;
+
     @Column(unique = true, nullable = false)
     private String email;
 
@@ -33,8 +35,30 @@ public class User implements UserDetails {
     private String firstName;
     private String lastName;
 
+    private String rollNumber;
+    private String registrationNumber;
+    private String phoneNumber;
+    private String department;
+    private String course;
+    private String semester;
+    private String year;
+    private String collegeName;
+    private String examStatus;
+    private String examStartTime;
+    private String examEndTime;
+
+    @Builder.Default
+    private boolean isActive = true;
+
+    private java.time.LocalDateTime createdAt;
+
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = java.time.LocalDateTime.now();
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

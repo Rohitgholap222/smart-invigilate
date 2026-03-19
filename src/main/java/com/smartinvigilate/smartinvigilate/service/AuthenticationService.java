@@ -43,10 +43,20 @@ public class AuthenticationService {
             throw new RuntimeException("User already exists with email: " + request.getEmail());
         }
         var user = User.builder()
+                .studentId(request.getStudentId())
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
+                .rollNumber(request.getRollNumber())
+                .registrationNumber(request.getRegistrationNumber())
                 .email(request.getEmail())
+                .phoneNumber(request.getPhoneNumber())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .department(request.getDepartment())
+                .course(request.getCourse())
+                .semester(request.getSemester())
+                .year(request.getYear())
+                .collegeName(request.getCollegeName())
+                .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .role(Role.STUDENT)
                 .build();
         repository.save(user);

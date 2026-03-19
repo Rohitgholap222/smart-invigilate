@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByEmail(String email);
     boolean existsByRole(com.smartinvigilate.smartinvigilate.model.Role role);
+    java.util.List<User> findByRole(com.smartinvigilate.smartinvigilate.model.Role role);
 }

@@ -45,6 +45,33 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/students")
+    public ResponseEntity<List<User>> getAllStudents() {
+        return ResponseEntity.ok(adminService.getAllStudents());
+    }
+
+    @PutMapping("/students/{id}")
+    public ResponseEntity<?> updateStudent(
+            @PathVariable Integer id,
+            @RequestBody RegisterRequest request
+    ) {
+        try {
+            return ResponseEntity.ok(adminService.updateStudent(id, request));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/students/{id}")
+    public ResponseEntity<String> deleteStudent(@PathVariable Integer id) {
+        try {
+            adminService.deleteStudent(id);
+            return ResponseEntity.ok("Student deleted successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PostMapping("/exams")
     public ResponseEntity<Exam> createExam(
             @RequestBody ExamRequest request,
