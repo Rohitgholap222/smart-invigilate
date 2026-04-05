@@ -116,7 +116,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"firstName\": \"Student\",\n    \"lastName\": \"One\",\n    \"email\": \"student1@example.com\",\n    \"password\": \"student123\"\n}"
+							"raw": "{\n    \"studentId\": \"S12345\",\n    \"firstName\": \"Student\",\n    \"lastName\": \"One\",\n    \"rollNumber\": \"R101\",\n    \"registrationNumber\": \"REG1001\",\n    \"email\": \"student1@example.com\",\n    \"phoneNumber\": \"9876543210\",\n    \"password\": \"student123\",\n    \"department\": \"Computer Science\",\n    \"course\": \"BTech\",\n    \"semester\": \"5th\",\n    \"year\": \"3rd\",\n    \"collegeName\": \"ABC Institute\",\n    \"isActive\": true\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/admin/add-student",
@@ -153,7 +153,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\n        \"firstName\": \"Student\",\n        \"lastName\": \"Two\",\n        \"email\": \"student2@example.com\",\n        \"password\": \"student123\"\n    },\n    {\n        \"firstName\": \"Student\",\n        \"lastName\": \"Three\",\n        \"email\": \"student3@example.com\",\n        \"password\": \"student123\"\n    }\n]"
+							"raw": "[\n    {\n        \"studentId\": \"S12346\",\n        \"firstName\": \"Student\",\n        \"lastName\": \"Two\",\n        \"rollNumber\": \"R102\",\n        \"registrationNumber\": \"REG1002\",\n        \"email\": \"student2@example.com\",\n        \"phoneNumber\": \"9876543211\",\n        \"password\": \"student123\",\n        \"department\": \"Computer Science\",\n        \"course\": \"BTech\",\n        \"semester\": \"5th\",\n        \"year\": \"3rd\",\n        \"collegeName\": \"ABC Institute\",\n        \"isActive\": true\n    },\n    {\n        \"studentId\": \"S12347\",\n        \"firstName\": \"Student\",\n        \"lastName\": \"Three\",\n        \"rollNumber\": \"R103\",\n        \"registrationNumber\": \"REG1003\",\n        \"email\": \"student3@example.com\",\n        \"phoneNumber\": \"9876543212\",\n        \"password\": \"student123\",\n        \"department\": \"Computer Science\",\n        \"course\": \"BTech\",\n        \"semester\": \"5th\",\n        \"year\": \"3rd\",\n        \"collegeName\": \"ABC Institute\",\n        \"isActive\": true\n    }\n]"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/admin/add-students",
@@ -329,6 +329,137 @@
 								"exams",
 								"1",
 								"results"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Students",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/students",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"students"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Student",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"StudentUpdated\",\n    \"lastName\": \"One\",\n    \"email\": \"student1@example.com\",\n    \"password\": \"student123\",\n    \"rollNumber\": \"R123\",\n    \"registrationNumber\": \"REG123\",\n    \"phoneNumber\": \"1234567890\",\n    \"department\": \"CS\",\n    \"course\": \"BTech\",\n    \"semester\": \"5\",\n    \"year\": \"3\",\n    \"collegeName\": \"Engineering College\",\n    \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/students/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"students",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Student",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/students/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"students",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Handle Cheating",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/submissions/1/cheating?isCheated=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"submissions",
+								"1",
+								"cheating"
+							],
+							"query": [
+								{
+									"key": "isCheated",
+									"value": "true"
+								}
 							]
 						}
 					},
