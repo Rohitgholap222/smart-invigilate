@@ -1,24 +1,51 @@
 {
 	"info": {
 		"_postman_id": "893d5678-1a2b-4c3d-9e0f-1a2b3c4d5e6f",
-		"name": "Smart Invigilate",
-		"description": "Postman collection for Smart Invigilate API.",
+		"name": "Smart Invigilate - Production",
+		"description": "Production-level Postman collection for Smart Invigilate API with JWT Refresh Tokens and AI Monitoring.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Authentication",
+			"name": "01. Authentication",
 			"item": [
 				{
-					"name": "Login (Admin)",
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Rohit\",\n    \"lastName\": \"Gholap\",\n    \"email\": \"rohit@example.com\",\n    \"password\": \"rohit123\",\n    \"role\": \"ADMIN\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					}
+				},
+				{
+					"name": "Login",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
 									"var jsonData = pm.response.json();",
-									"pm.collectionVariables.set(\"jwt_token\", jsonData.token);",
-									"console.log(\"Token stored:\", jsonData.token);"
+									"pm.collectionVariables.set(\"jwt_token\", jsonData.accessToken);",
+									"pm.collectionVariables.set(\"refresh_token\", jsonData.refreshToken);",
+									"console.log(\"Token stored:\", jsonData.accessToken);"
 								],
 								"type": "text/javascript"
 							}
@@ -34,7 +61,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"admin@smartinvigilate.com\",\n    \"password\": \"admin123\"\n}"
+							"raw": "{\n    \"email\": \"rohit@example.com\",\n    \"password\": \"rohit123\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/auth/login",
@@ -46,474 +73,165 @@
 								"login"
 							]
 						}
-					},
-					"response": []
+					}
 				},
 				{
-					"name": "Login (Student)",
-					"event": [
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{refresh_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/refresh-token",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"refresh-token"
+							]
+						}
+					}
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"body": {
+							"mode": "raw",
+							"raw": "rohit@example.com"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/forgot-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"forgot-password"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "02. Admin Module",
+			"item": [
+				{
+					"name": "Student Management",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"pm.collectionVariables.set(\"student_token\", jsonData.token);",
-									"console.log(\"Student Token stored:\", jsonData.token);"
+							"name": "Bulk Students",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
 								],
-								"type": "text/javascript"
+								"body": {
+									"mode": "raw",
+									"raw": "[\n    {\n        \"studentId\": \"S001\",\n        \"firstName\": \"S\",\n        \"lastName\": \"1\",\n        \"email\": \"s1@example.com\",\n        \"password\": \"s1\"\n    },\n    {\n        \"studentId\": \"S002\",\n        \"firstName\": \"S\",\n        \"lastName\": \"2\",\n        \"email\": \"s2@example.com\",\n        \"password\": \"s2\"\n    }\n]"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/admin/students/bulk",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"admin",
+										"students",
+										"bulk"
+									]
+								}
 							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"email\": \"student1@example.com\",\n    \"password\": \"student123\"\n}"
 						},
-						"url": {
-							"raw": "{{baseUrl}}/auth/login",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"auth",
-								"login"
-							]
+						{
+							"name": "Search Students",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{baseUrl}}/admin/students/search?query=S1",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"admin",
+										"students",
+										"search"
+									],
+									"query": [
+										{
+											"key": "query",
+											"value": "S1"
+										}
+									]
+								}
+							}
 						}
-					},
-					"response": []
+					]
+				},
+				{
+					"name": "Exam Management",
+					"item": [
+						{
+							"name": "Create Exam",
+							"request": {
+								"method": "POST",
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Final Exam\",\n    \"description\": \"Semester final\",\n    \"startTime\": \"2024-05-01T09:00:00\",\n    \"endTime\": \"2024-05-01T12:00:00\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/admin/exams",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"admin",
+										"exams"
+									]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "Analytics",
+					"item": [
+						{
+							"name": "Dashboard info",
+							"request": {
+								"method": "GET",
+								"url": {
+									"raw": "{{baseUrl}}/admin/dashboard",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"admin",
+										"dashboard"
+									]
+								}
+							}
+						}
+					]
 				}
 			]
 		},
 		{
-			"name": "Admin Flow",
+			"name": "03. Student Module",
 			"item": [
-				{
-					"name": "Add Student",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"studentId\": \"S12345\",\n    \"firstName\": \"Student\",\n    \"lastName\": \"One\",\n    \"rollNumber\": \"R101\",\n    \"registrationNumber\": \"REG1001\",\n    \"email\": \"student1@example.com\",\n    \"phoneNumber\": \"9876543210\",\n    \"password\": \"student123\",\n    \"department\": \"Computer Science\",\n    \"course\": \"BTech\",\n    \"semester\": \"5th\",\n    \"year\": \"3rd\",\n    \"collegeName\": \"ABC Institute\",\n    \"isActive\": true\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/admin/add-student",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"admin",
-								"add-student"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Add Multiple Students",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "[\n    {\n        \"studentId\": \"S12346\",\n        \"firstName\": \"Student\",\n        \"lastName\": \"Two\",\n        \"rollNumber\": \"R102\",\n        \"registrationNumber\": \"REG1002\",\n        \"email\": \"student2@example.com\",\n        \"phoneNumber\": \"9876543211\",\n        \"password\": \"student123\",\n        \"department\": \"Computer Science\",\n        \"course\": \"BTech\",\n        \"semester\": \"5th\",\n        \"year\": \"3rd\",\n        \"collegeName\": \"ABC Institute\",\n        \"isActive\": true\n    },\n    {\n        \"studentId\": \"S12347\",\n        \"firstName\": \"Student\",\n        \"lastName\": \"Three\",\n        \"rollNumber\": \"R103\",\n        \"registrationNumber\": \"REG1003\",\n        \"email\": \"student3@example.com\",\n        \"phoneNumber\": \"9876543212\",\n        \"password\": \"student123\",\n        \"department\": \"Computer Science\",\n        \"course\": \"BTech\",\n        \"semester\": \"5th\",\n        \"year\": \"3rd\",\n        \"collegeName\": \"ABC Institute\",\n        \"isActive\": true\n    }\n]"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/admin/add-students",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"admin",
-								"add-students"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Exam",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"title\": \"Semester Final\",\n    \"description\": \"Main exam for the semester\",\n    \"startTime\": \"2024-03-10T10:00:00\",\n    \"endTime\": \"2024-03-10T12:00:00\",\n    \"durationInMinutes\": 120\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/admin/exams",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"admin",
-								"exams"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Add Questions",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "[\n    {\n        \"content\": \"What is 2+2?\",\n        \"optionA\": \"3\",\n        \"optionB\": \"4\",\n        \"optionC\": \"5\",\n        \"optionD\": \"6\",\n        \"correctOption\": \"B\"\n    }\n]"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/admin/exams/1/questions",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"admin",
-								"exams",
-								"1",
-								"questions"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Activate Exam",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/admin/exams/1/activate",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"admin",
-								"exams",
-								"1",
-								"activate"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Monitor Exam",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/admin/exams/1/monitor",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"admin",
-								"exams",
-								"1",
-								"monitor"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "View Results",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/admin/exams/1/results",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"admin",
-								"exams",
-								"1",
-								"results"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Students",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/admin/students",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"admin",
-								"students"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Student",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"firstName\": \"StudentUpdated\",\n    \"lastName\": \"One\",\n    \"email\": \"student1@example.com\",\n    \"password\": \"student123\",\n    \"rollNumber\": \"R123\",\n    \"registrationNumber\": \"REG123\",\n    \"phoneNumber\": \"1234567890\",\n    \"department\": \"CS\",\n    \"course\": \"BTech\",\n    \"semester\": \"5\",\n    \"year\": \"3\",\n    \"collegeName\": \"Engineering College\",\n    \"isActive\": true\n}"
-						},
-						"url": {
-							"raw": "{{baseUrl}}/admin/students/1",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"admin",
-								"students",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Student",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/admin/students/1",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"admin",
-								"students",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Handle Cheating",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/admin/submissions/1/cheating?isCheated=true",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"admin",
-								"submissions",
-								"1",
-								"cheating"
-							],
-							"query": [
-								{
-									"key": "isCheated",
-									"value": "true"
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Student Flow",
-			"item": [
-				{
-					"name": "Get Active Exams",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{student_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/student/exams/active",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"student",
-								"exams",
-								"active"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "Start Exam",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{student_token}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
-						"header": [],
 						"url": {
 							"raw": "{{baseUrl}}/student/exams/1/start",
 							"host": [
@@ -526,35 +244,14 @@
 								"start"
 							]
 						}
-					},
-					"response": []
+					}
 				},
 				{
-					"name": "Add Proctoring Log",
+					"name": "Save Answer (Auto-save)",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{student_token}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"logType\": \"TAB_SWITCH\",\n    \"details\": \"User switched tab\",\n    \"timestamp\": \"2024-03-07T21:00:00\"\n}"
-						},
 						"url": {
-							"raw": "{{baseUrl}}/student/exams/1/logs",
+							"raw": "{{baseUrl}}/student/exams/1/answers?questionId=1&selectedOption=A",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -562,36 +259,25 @@
 								"student",
 								"exams",
 								"1",
-								"logs"
+								"answers"
+							],
+							"query": [
+								{
+									"key": "questionId",
+									"value": "1"
+								},
+								{
+									"key": "selectedOption",
+									"value": "A"
+								}
 							]
 						}
-					},
-					"response": []
+					}
 				},
 				{
 					"name": "Submit Exam",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{student_token}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"answers\": {\n        \"1\": \"B\"\n    }\n}"
-						},
 						"url": {
 							"raw": "{{baseUrl}}/student/exams/1/submit",
 							"host": [
@@ -604,62 +290,52 @@
 								"submit"
 							]
 						}
-					},
-					"response": []
-				},
+					}
+				}
+			]
+		},
+		{
+			"name": "04. AI Module",
+			"item": [
 				{
-					"name": "View Result",
+					"name": "Face Detection",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
+						"method": "POST",
+						"body": {
+							"mode": "formdata",
+							"formdata": [
 								{
-									"key": "token",
-									"value": "{{student_token}}",
-									"type": "string"
+									"key": "image",
+									"type": "file",
+									"src": []
 								}
 							]
 						},
-						"method": "GET",
-						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/student/exams/1/result",
+							"raw": "{{baseUrl}}/ai/detect-face",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"student",
-								"exams",
-								"1",
-								"result"
+								"ai",
+								"detect-face"
 							]
 						}
-					},
-					"response": []
+					}
 				}
 			]
 		}
 	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
 			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		}
-	],
+		]
+	},
 	"variable": [
 		{
 			"key": "baseUrl",
@@ -668,13 +344,11 @@
 		},
 		{
 			"key": "jwt_token",
-			"value": "",
-			"type": "string"
+			"value": ""
 		},
 		{
-			"key": "student_token",
-			"value": "",
-			"type": "string"
+			"key": "refresh_token",
+			"value": ""
 		}
 	]
 }

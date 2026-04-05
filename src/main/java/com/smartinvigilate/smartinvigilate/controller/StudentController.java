@@ -1,7 +1,6 @@
 package com.smartinvigilate.smartinvigilate.controller;
 
 import com.smartinvigilate.smartinvigilate.dto.ProctoringLogRequest;
-import com.smartinvigilate.smartinvigilate.dto.SubmitExamRequest;
 import com.smartinvigilate.smartinvigilate.model.*;
 import com.smartinvigilate.smartinvigilate.service.StudentService;
 import lombok.RequiredArgsConstructor;
@@ -18,43 +17,84 @@ public class StudentController {
 
     private final StudentService studentService;
 
+    // Exam Flow
+    @GetMapping("/exams")
+    public ResponseEntity<List<Exam>> getAllExams() {
+        return ResponseEntity.ok(studentService.getAllExams());
+    }
+
     @GetMapping("/exams/active")
     public ResponseEntity<List<Exam>> getActiveExams() {
         return ResponseEntity.ok(studentService.getActiveExams());
     }
 
-    @PostMapping("/exams/{examId}/start")
-    public ResponseEntity<String> startExam(
-            @PathVariable Integer examId,
-            @AuthenticationPrincipal User student
-    ) {
-        studentService.startExam(examId, student);
-        return ResponseEntity.ok("Exam started");
+    @GetMapping("/exams/{id}")
+    public ResponseEntity<Exam> getExam(@PathVariable Integer id) {
+        return ResponseEntity.ok(studentService.getExamById(id));
     }
 
-    @PostMapping("/exams/{examId}/submit")
-    public ResponseEntity<Submission> submitExam(
-            @PathVariable Integer examId,
-            @RequestBody SubmitExamRequest request,
-            @AuthenticationPrincipal User student
-    ) {
-        return ResponseEntity.ok(studentService.submitExam(examId, request, student));
+    @PostMapping("/exams/{id}/start")
+    public ResponseEntity<Void> startExam(@PathVariable Integer id, @AuthenticationPrincipal User user) {
+        studentService.startExam(id, user);
+        return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/exams/{examId}/logs")
-    public ResponseEntity<ProctoringLog> addLog(
-            @PathVariable Integer examId,
-            @RequestBody ProctoringLogRequest request,
-            @AuthenticationPrincipal User student
-    ) {
-        return ResponseEntity.ok(studentService.addLog(examId, request, student));
+    @PostMapping("/exams/{id}/submit")
+    public ResponseEntity<Submission> submitExam(@PathVariable Integer id, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(studentService.submitExam(id, user));
     }
 
-    @GetMapping("/exams/{examId}/result")
-    public ResponseEntity<Submission> getResult(
-            @PathVariable Integer examId,
-            @AuthenticationPrincipal User student
-    ) {
-        return ResponseEntity.ok(studentService.getResult(examId, student));
+    @GetMapping("/exams/{id}/result")
+    public ResponseEntity<Submission> getResult(@PathVariable Integer id, @AuthenticationPrincipal User user) {
+        // Find existing result
+        return ResponseEntity.ok(studentService.getExamHistory(user).stream()
+                .filter(s -> s.getExam().getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Result not found")));
+    }
+
+    @GetMapping("/exams/history")
+    public ResponseEntity<List<Submission>> getHistory(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(studentService.getExamHistory(user));
+    }
+
+    // Answer Handling
+    @PostMapping("/exams/{id}/answers")
+    public ResponseEntity<Void> saveAnswer(@PathVariable Integer id, @RequestParam Integer questionId, @RequestParam String selectedOption, @AuthenticationPrincipal User user) {
+        studentService.saveAnswer(id, questionId, selectedOption, user);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/exams/{id}/answers")
+    public ResponseEntity<List<Answer>> getAnswers(@PathVariable Integer id, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(studentService.getAnswers(id, user));
+    }
+
+    @PatchMapping("/exams/{id}/answers")
+    public ResponseEntity<Void> patchAnswer(@PathVariable Integer id, @RequestParam Integer questionId, @RequestParam String selectedOption, @AuthenticationPrincipal User user) {
+        studentService.saveAnswer(id, questionId, selectedOption, user);
+        return ResponseEntity.ok().build();
+    }
+
+    // Proctoring Logs
+    @PostMapping("/exams/{id}/logs")
+    public ResponseEntity<ProctoringLog> addLog(@PathVariable Integer id, @RequestBody ProctoringLogRequest request, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(studentService.addLog(id, request, user));
+    }
+
+    @GetMapping("/exams/{id}/logs")
+    public ResponseEntity<List<ProctoringLog>> getLogs(@PathVariable Integer id, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(studentService.getLogs(id, user));
+    }
+
+    // Webcam / Monitoring (Mock)
+    @PostMapping("/webcam/start")
+    public ResponseEntity<String> startWebcam() {
+        return ResponseEntity.ok("Webcam started");
+    }
+
+    @PostMapping("/webcam/stop")
+    public ResponseEntity<String> stopWebcam() {
+        return ResponseEntity.ok("Webcam stopped");
     }
 }

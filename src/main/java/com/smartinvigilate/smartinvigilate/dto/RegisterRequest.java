@@ -1,6 +1,5 @@
 package com.smartinvigilate.smartinvigilate.dto;
 
-import com.smartinvigilate.smartinvigilate.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,5 +24,5 @@ public class RegisterRequest {
     private String year;
     private String collegeName;
     private Boolean isActive;
-    private Role role;
+    private String role;
 }

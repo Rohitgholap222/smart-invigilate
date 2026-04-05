@@ -13,22 +13,33 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "submissions")
-public class Submission {
-
+@Table(name = "cheating_flags")
+public class CheatingFlag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "exam_id")
     private Exam exam;
 
-    private LocalDateTime submissionTime;
-    private Double score;
-    private boolean cheatingFlag;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "submission_id")
+    private Submission submission;
+
+    @Column(nullable = false)
+    private String reason;
+
+    private String severity; // LOW, MEDIUM, HIGH
+
+    private LocalDateTime flaggedAt;
+
+    @PrePersist
+    protected void onFlag() {
+        flaggedAt = LocalDateTime.now();
+    }
 }

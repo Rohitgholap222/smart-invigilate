@@ -7,5 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface SubmissionRepository extends JpaRepository<Submission, Integer> {
-    Optional<Submission> findByStudentAndExam(User student, Exam exam);
+    Optional<Submission> findByUserAndExam(User user, Exam exam);
+    java.util.List<Submission> findByUser(User user);
 }

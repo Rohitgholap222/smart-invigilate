@@ -22,7 +22,7 @@ public class ProctoringLog {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User student;
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "exam_id")

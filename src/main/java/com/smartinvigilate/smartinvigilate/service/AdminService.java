@@ -20,18 +20,27 @@ public class AdminService {
     private final ProctoringLogRepository proctoringLogRepository;
     private final SubmissionRepository submissionRepository;
     private final UserRepository userRepository;
+    private final CheatingFlagRepository cheatingFlagRepository;
+    private final RoleRepository roleRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     public List<User> getAllStudents() {
-        return userRepository.findByRole(Role.STUDENT);
+        return userRepository.findAll().stream()
+                .filter(u -> u.getRole().getName().equalsIgnoreCase("STUDENT"))
+                .collect(Collectors.toList());
     }
 
     public User updateStudent(Integer id, RegisterRequest request) {
-        User student = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
-        
-        if (student.getRole() != Role.STUDENT) {
-            throw new RuntimeException("User is not a student");
+        User student;
+        if (id == null) {
+            student = new User();
+            student.setRole(roleRepository.findByName("STUDENT").orElseThrow());
+        } else {
+            student = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Student not found"));
+            if (!student.getRole().getName().equalsIgnoreCase("STUDENT")) {
+                throw new RuntimeException("User is not a student");
+            }
         }
 
         if (request.getStudentId() != null) student.setStudentId(request.getStudentId());
@@ -58,7 +67,7 @@ public class AdminService {
         User student = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
         
-        if (student.getRole() != Role.STUDENT) {
+        if (!student.getRole().getName().equalsIgnoreCase("STUDENT")) {
             throw new RuntimeException("User is not a student");
         }
         
@@ -102,25 +111,107 @@ public class AdminService {
         return examRepository.save(exam);
     }
 
-    public List<ProctoringLog> monitorExam(Integer examId) {
-        Exam exam = examRepository.findById(examId)
-                .orElseThrow(() -> new RuntimeException("Exam not found"));
-        return proctoringLogRepository.findByExam(exam);
+    public List<User> addStudentsBulk(List<RegisterRequest> requests) {
+        Role studentRole = roleRepository.findByName("STUDENT").orElseThrow();
+        return requests.stream()
+                .map(req -> {
+                    var user = User.builder()
+                            .studentId(req.getStudentId())
+                            .firstName(req.getFirstName())
+                            .lastName(req.getLastName())
+                            .email(req.getEmail())
+                            .password(passwordEncoder.encode(req.getPassword()))
+                            .role(studentRole)
+                            .isActive(true)
+                            .build();
+                    return userRepository.save(user);
+                }).collect(Collectors.toList());
     }
 
-    public List<Submission> getResults(Integer examId) {
-        Exam exam = examRepository.findById(examId)
-                .orElseThrow(() -> new RuntimeException("Exam not found"));
-        // This is a simplification; in a real app we might want a custom JPQL query
-        return submissionRepository.findAll().stream()
-                .filter(s -> s.getExam().getId().equals(examId))
+    public User getStudentById(Integer id) {
+        return userRepository.findById(id)
+                .filter(u -> u.getRole().getName().equalsIgnoreCase("STUDENT"))
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+    }
+
+    public List<User> searchStudents(String query) {
+        // Simple search by email or name
+        return userRepository.findAll().stream()
+                .filter(u -> u.getRole().getName().equalsIgnoreCase("STUDENT"))
+                .filter(u -> u.getEmail().contains(query) || u.getFirstName().contains(query) || u.getLastName().contains(query))
                 .collect(Collectors.toList());
     }
-    
-    public Submission handleCheating(Integer submissionId, boolean isCheated) {
-        Submission submission = submissionRepository.findById(submissionId)
+
+    public User patchStudentStatus(Integer id, boolean isActive) {
+        User student = getStudentById(id);
+        student.setActive(isActive);
+        return userRepository.save(student);
+    }
+
+    public List<Exam> getAllExams() {
+        return examRepository.findAll();
+    }
+
+    public Exam getExamById(Integer id) {
+        return examRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Exam not found"));
+    }
+
+    public Exam updateExam(Integer id, ExamRequest request) {
+        Exam exam = getExamById(id);
+        exam.setTitle(request.getTitle());
+        exam.setDescription(request.getDescription());
+        exam.setStartTime(request.getStartTime());
+        exam.setEndTime(request.getEndTime());
+        return examRepository.save(exam);
+    }
+
+    public void deleteExam(Integer id) {
+        examRepository.deleteById(id);
+    }
+
+    public Exam deactivateExam(Integer id) {
+        Exam exam = getExamById(id);
+        exam.setActive(false);
+        return examRepository.save(exam);
+    }
+
+    public List<Question> getQuestionsByExamId(Integer examId) {
+        return questionRepository.findByExamId(examId);
+    }
+
+    public Question updateQuestion(Integer id, QuestionRequest request) {
+        Question q = questionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Question not found"));
+        q.setContent(request.getContent());
+        q.setOptionA(request.getOptionA());
+        q.setOptionB(request.getOptionB());
+        q.setOptionC(request.getOptionC());
+        q.setOptionD(request.getOptionD());
+        q.setCorrectOption(request.getCorrectOption());
+        return questionRepository.save(q);
+    }
+
+    public void deleteQuestion(Integer id) {
+        questionRepository.deleteById(id);
+    }
+
+    public List<CheatingFlag> getCheatingFlags(Integer examId) {
+        return cheatingFlagRepository.findByExamId(examId);
+    }
+
+    public void flagSubmission(Integer submissionId, String reason) {
+        Submission s = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new RuntimeException("Submission not found"));
-        submission.setCheated(isCheated);
-        return submissionRepository.save(submission);
+        CheatingFlag flag = CheatingFlag.builder()
+                .submission(s)
+                .user(s.getUser())
+                .exam(s.getExam())
+                .reason(reason)
+                .severity("HIGH")
+                .build();
+        cheatingFlagRepository.save(flag);
+        s.setCheatingFlag(true);
+        submissionRepository.save(s);
     }
 }

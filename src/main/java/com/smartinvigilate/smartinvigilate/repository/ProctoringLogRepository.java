@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ProctoringLogRepository extends JpaRepository<ProctoringLog, Integer> {
     List<ProctoringLog> findByExam(Exam exam);
+    List<ProctoringLog> findByUserAndExam(com.smartinvigilate.smartinvigilate.model.User user, Exam exam);
 }

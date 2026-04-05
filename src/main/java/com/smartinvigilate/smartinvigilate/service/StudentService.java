@@ -20,62 +20,82 @@ public class StudentService {
     private final QuestionRepository questionRepository;
     private final SubmissionRepository submissionRepository;
     private final ProctoringLogRepository proctoringLogRepository;
+    private final AnswerRepository answerRepository;
 
     public List<Exam> getActiveExams() {
         return examRepository.findByIsActiveTrue();
     }
 
-    public void startExam(Integer examId, User student) {
-        // Log entry or check if already started
-        Exam exam = examRepository.findById(examId)
+    public List<Exam> getAllExams() {
+        return examRepository.findAll();
+    }
+
+    public Exam getExamById(Integer id) {
+        return examRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Exam not found"));
-        
-        Optional<Submission> existing = submissionRepository.findByStudentAndExam(student, exam);
+    }
+
+    public void startExam(Integer examId, User user) {
+        Exam exam = getExamById(examId);
+        Optional<Submission> existing = submissionRepository.findByUserAndExam(user, exam);
         if (existing.isEmpty()) {
             Submission submission = Submission.builder()
-                    .student(student)
+                    .user(user)
                     .exam(exam)
                     .submissionTime(null)
                     .score(0.0)
-                    .isCheated(false)
+                    .cheatingFlag(false)
                     .build();
             submissionRepository.save(submission);
         }
     }
 
-    public Submission submitExam(Integer examId, SubmitExamRequest request, User student) {
-        Exam exam = examRepository.findById(examId)
-                .orElseThrow(() -> new RuntimeException("Exam not found"));
+    public void saveAnswer(Integer examId, Integer questionId, String selectedOption, User user) {
+        Exam exam = getExamById(examId);
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new RuntimeException("Question not found"));
         
-        Submission submission = submissionRepository.findByStudentAndExam(student, exam)
+        Optional<Answer> existing = answerRepository.findByUserIdAndExamIdAndQuestionId(user.getId(), examId, questionId);
+        Answer answer = existing.orElse(Answer.builder()
+                .user(user)
+                .exam(exam)
+                .question(question)
+                .build());
+        
+        answer.setSelectedOption(selectedOption);
+        answer.setCorrect(selectedOption.equalsIgnoreCase(question.getCorrectOption()));
+        answerRepository.save(answer);
+    }
+
+    public List<Answer> getAnswers(Integer examId, User user) {
+        return answerRepository.findByUserIdAndExamId(user.getId(), examId);
+    }
+
+    public Submission submitExam(Integer examId, User user) {
+        Exam exam = getExamById(examId);
+        Submission submission = submissionRepository.findByUserAndExam(user, exam)
                 .orElseThrow(() -> new RuntimeException("Submission record not found, did you start the exam?"));
 
         if (submission.getSubmissionTime() != null) {
             throw new RuntimeException("Exam already submitted");
         }
 
-        double score = 0;
-        List<Question> questions = exam.getQuestions();
-        Map<Integer, String> answers = request.getAnswers();
+        List<Answer> studentAnswers = answerRepository.findByUserIdAndExamId(user.getId(), examId);
+        long score = studentAnswers.stream().filter(Answer::isCorrect).count();
 
-        for (Question q : questions) {
-            String studentAnswer = answers.get(q.getId());
-            if (studentAnswer != null && studentAnswer.equalsIgnoreCase(q.getCorrectOption())) {
-                score++;
-            }
-        }
-
-        submission.setScore(score);
+        submission.setScore((double) score);
         submission.setSubmissionTime(LocalDateTime.now());
         return submissionRepository.save(submission);
     }
 
-    public ProctoringLog addLog(Integer examId, ProctoringLogRequest request, User student) {
-        Exam exam = examRepository.findById(examId)
-                .orElseThrow(() -> new RuntimeException("Exam not found"));
-        
+    public List<Submission> getExamHistory(User user) {
+        return submissionRepository.findByUser(user);
+    }
+
+    public ProctoringLog addLog(Integer examId, ProctoringLogRequest request, User user) {
+        Exam exam = getExamById(examId);
         ProctoringLog log = ProctoringLog.builder()
-                .student(student)
+                .user(user)
                 .exam(exam)
                 .logType(request.getLogType())
                 .timestamp(request.getTimestamp() != null ? request.getTimestamp() : LocalDateTime.now())
@@ -84,10 +104,7 @@ public class StudentService {
         return proctoringLogRepository.save(log);
     }
 
-    public Submission getResult(Integer examId, User student) {
-        Exam exam = examRepository.findById(examId)
-                .orElseThrow(() -> new RuntimeException("Exam not found"));
-        return submissionRepository.findByStudentAndExam(student, exam)
-                .orElseThrow(() -> new RuntimeException("Result not found"));
+    public List<ProctoringLog> getLogs(Integer examId, User user) {
+        return proctoringLogRepository.findByUserAndExam(user, examRepository.getById(examId));
     }
 }
